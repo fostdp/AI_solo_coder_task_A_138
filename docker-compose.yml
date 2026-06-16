@@ -1,0 +1,151 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: icecrack-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: icecrack_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      TZ: Asia/Shanghai
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./sql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d icecrack_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    networks:
+      - icecrack-net
+
+  mqtt:
+    image: eclipse-mosquitto:2.0.18
+    container_name: icecrack-mqtt
+    restart: unless-stopped
+    volumes:
+      - mosquitto_data:/mosquitto/data
+      - mosquitto_log:/mosquitto/log
+      - ./config/mosquitto.conf:/mosquitto/config/mosquitto.conf:ro
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    healthcheck:
+      test: ["CMD-SHELL", "mosquitto_sub -t '$$SYS/broker/version' -C 1 -W 3 || exit 1"]
+      interval: 20s
+      timeout: 5s
+      retries: 3
+    networks:
+      - icecrack-net
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: icecrack-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      mqtt:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/icecrack_db
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_PROFILES_ACTIVE: prod
+      MQTT_ENABLED: "true"
+      MQTT_BROKER_URL: tcp://mqtt:1883
+      MQTT_CLIENT_ID: icecrack-backend-docker
+      MQTT_TOPIC: sensors/+/data
+      MQTT_QOS: "1"
+      JAVA_OPTS: -XX:+UseG1GC -XX:MaxRAMPercentage=75.0 -Xmx512m
+      TZ: Asia/Shanghai
+    ports:
+      - "8080:8080"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    networks:
+      - icecrack-net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: icecrack-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost/ || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    networks:
+      - icecrack-net
+
+  simulator:
+    build:
+      context: ./simulator
+      dockerfile: Dockerfile
+    container_name: icecrack-simulator
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+      mqtt:
+        condition: service_healthy
+    environment:
+      API_BASE: http://backend:8080/api
+      MQTT_BROKER: mqtt
+      MQTT_PORT: "1883"
+      SIM_INTERVAL: "60"
+      PAVEMENTS: "5"
+      RAINFALL_MM: ""
+      CRACK_WIDTH_MM: ""
+      USE_MQTT: "true"
+      RUN_SIMULATION: "true"
+      RUN_AESTHETIC: "true"
+    networks:
+      - icecrack-net
+
+  prometheus:
+    image: prom/prometheus:v2.51.0
+    container_name: icecrack-prometheus
+    restart: unless-stopped
+    depends_on:
+      - backend
+    volumes:
+      - ./config/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    networks:
+      - icecrack-net
+
+volumes:
+  postgres_data:
+  mosquitto_data:
+  mosquitto_log:
+  prometheus_data:
+
+networks:
+  icecrack-net:
+    driver: bridge

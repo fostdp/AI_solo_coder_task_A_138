@@ -70,11 +70,15 @@ CREATE TABLE alert (
     resolved_at TIMESTAMP WITH TIME ZONE
 );
 
+CREATE INDEX idx_sensor_data_pavement_time ON sensor_data(pavement_id, recorded_at DESC);
 CREATE INDEX idx_sensor_data_pavement ON sensor_data(pavement_id);
 CREATE INDEX idx_sensor_data_time ON sensor_data(recorded_at DESC);
+CREATE INDEX idx_simulation_pavement_time ON simulation_result(pavement_id, sim_time DESC);
 CREATE INDEX idx_simulation_pavement ON simulation_result(pavement_id);
 CREATE INDEX idx_simulation_time ON simulation_result(sim_time DESC);
+CREATE INDEX idx_aesthetic_pavement_time ON aesthetic_result(pavement_id, calc_time DESC);
 CREATE INDEX idx_aesthetic_pavement ON aesthetic_result(pavement_id);
+CREATE INDEX idx_alert_pavement_time ON alert(pavement_id, created_at DESC);
 CREATE INDEX idx_alert_pavement ON alert(pavement_id);
 CREATE INDEX idx_alert_time ON alert(created_at DESC);
 CREATE INDEX idx_alert_unack ON alert(acknowledged) WHERE acknowledged = FALSE;

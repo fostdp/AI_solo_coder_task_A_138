@@ -22,6 +22,37 @@ spring:
       write-dates-as-timestamps: false
     default-property-inclusion: non_null
 
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+    jmx:
+      exposure:
+        include: '*'
+  endpoint:
+    health:
+      show-details: when-authorized
+      probes:
+        enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    tags:
+      application: ice-crack-pavement
+
+mqtt:
+  enabled: false
+  broker-url: tcp://localhost:1883
+  client-id: icecrack-backend
+  topic: sensors/+/data
+  username:
+  password:
+  qos: 1
+  connection-timeout: 10
+  keep-alive: 60
+
 drainage:
   gravity: 9.81
   friction-coeff: 0.03
