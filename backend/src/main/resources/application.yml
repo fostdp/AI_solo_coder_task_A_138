@@ -21,3 +21,59 @@ spring:
     serialization:
       write-dates-as-timestamps: false
     default-property-inclusion: non_null
+
+drainage:
+  gravity: 9.81
+  friction-coeff: 0.03
+  time-step: 0.5
+  sample-interval: 10
+  recession-threshold-m: 0.001
+  recession-alert-threshold-sec: 1800
+  crack-infiltration-width-factor: 10.0
+  crack-infiltration-step-factor: 0.1
+  crack-flux-base-multiplier: 0.8
+  crack-depth-enhance-divisor: 5.0
+  slope-vertical-reduction: 0.5
+  cfl-factor: 0.5
+
+aesthetic:
+  unbiased-box-sizes:
+    - 2
+    - 4
+    - 8
+    - 16
+    - 32
+    - 64
+    - 128
+  raw-box-sizes:
+    - 2
+    - 4
+    - 8
+    - 16
+    - 32
+    - 64
+  entropy-bins: 18
+  entropy-bin-degrees: 10.0
+  brown-correction-power: 0.15
+  boundary-band-ratio: 6.0
+  fractal-weight: 0.4
+  entropy-weight: 0.3
+  density-weight: 0.3
+  density-scale: 10.0
+  fractal-clip-min: 1.0
+  fractal-clip-max: 2.0
+  fractal-scale-factor: 1.05
+  irregularity-scale: 0.1
+  crack-branch-high-prob: 0.7
+  crack-branch-low-prob: 0.4
+  crack-split-prob: 0.35
+  default-seed-points: 15
+  seed-points-variation: 10
+  default-target-segments: 35
+  default-irregularity: 0.7
+  default-seed: 42
+  length-weight-multiplier: 2.0
+  symmetry-chi-divisor: 3.0
+  symmetry-dist-weight: 0.4
+  symmetry-horiz-weight: 0.3
+  symmetry-vert-weight: 0.3

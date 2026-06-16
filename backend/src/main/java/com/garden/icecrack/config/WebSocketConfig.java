@@ -1,6 +1,6 @@
 package com.garden.icecrack.config;
 
-import com.garden.icecrack.websocket.AlertWebSocketHandler;
+import com.garden.icecrack.alarm_ws.websocket.AlertWebSocketHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;

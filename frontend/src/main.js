@@ -1,9 +1,11 @@
-import { IceCrackScene } from './three-scene.js';
+import { IceCrackScene } from './ice_crack_3d.js';
+import { AestheticsPanel } from './aesthetics_panel.js';
 import * as api from './api.js';
 import { AlertWebSocket } from './websocket.js';
 import { DashboardCharts } from './charts.js';
 
 let scene = null;
+let aestheticsPanel = null;
 let charts = null;
 let ws = null;
 let pavements = [];
@@ -88,36 +90,6 @@ function populateSimulationPanel(result) {
     if (result.timeSeries) {
         charts.drawTimeSeries(result.timeSeries, 'time-series-canvas');
     }
-}
-
-function populateAestheticPanel(result) {
-    const panel = document.getElementById('aesthetic-results');
-    if (!panel) return;
-    panel.innerHTML = '';
-    if (!result) return;
-
-    const metrics = [
-        { label: '分形维数', value: result.fractalDimension.toFixed(4) },
-        { label: '盒子计数维', value: result.boxCountingDim.toFixed(4) },
-        { label: '信息熵', value: result.infoEntropy.toFixed(4) },
-        { label: '视觉复杂度', value: result.visualComplexity.toFixed(4) },
-        { label: '裂缝数量', value: `${result.crackCount}` },
-        { label: '平均裂缝长度', value: `${result.avgCrackLength.toFixed(3)} m` },
-        { label: '裂缝密度', value: result.crackDensity.toFixed(4) },
-        { label: '图案对称性', value: result.patternSymmetry.toFixed(4) },
-    ];
-
-    const grid = document.createElement('div');
-    grid.className = 'metric-grid';
-    for (const m of metrics) {
-        const card = document.createElement('div');
-        card.className = 'result-card';
-        card.innerHTML = `<div class="label">${m.label}</div><div class="value">${m.value}</div>`;
-        grid.appendChild(card);
-    }
-    panel.appendChild(grid);
-
-    charts.drawFractalPlot(result, 'fractal-canvas');
 }
 
 function populateAlertsPanel(alerts) {
@@ -236,8 +208,7 @@ async function handleAnalyzeAesthetic() {
         return;
     }
     try {
-        const result = await api.analyzeAesthetic(currentPavement.id);
-        populateAestheticPanel(result);
+        const result = await aestheticsPanel.runAnalysis(currentPavement.id);
         showToast('美学分析完成', 'info');
 
         if (scene && result.crackSegments) {
@@ -260,6 +231,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         scene = new IceCrackScene(container);
     }
 
+    aestheticsPanel = new AestheticsPanel();
     charts = new DashboardCharts();
 
     ws = new AlertWebSocket((alert) => {
