@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>古代园林铺地冰裂纹美学量化与排水性能仿真系统</title>
+  <link rel="stylesheet" href="/src/styles.css" />
+</head>
+<body>
+  <header>
+    <h1 class="title">古代园林铺地冰裂纹美学量化与排水性能仿真系统</h1>
+  </header>
+
+  <div class="app-layout">
+    <aside class="sidebar">
+      <h3>铺地选择</h3>
+      <label for="pavement-selector">选择铺地</label>
+      <select id="pavement-selector"></select>
+
+      <h3>仿真参数</h3>
+      <label for="rainfall-slider">降雨强度 (mm/h)</label>
+      <input type="range" id="rainfall-slider" class="range-slider" min="0" max="200" value="50" />
+      <span id="rainfall-value">50</span>
+      <label for="crack-width">裂缝宽度 (mm)</label>
+      <input type="number" id="crack-width" min="0.1" max="30" step="0.1" value="5" />
+      <label for="step-frequency">游客踩踏频率 (次/分钟)</label>
+      <input type="number" id="step-frequency" min="0" max="120" step="1" value="30" />
+      <label for="grid-resolution">网格分辨率</label>
+      <input type="number" id="grid-resolution" min="5" max="100" step="5" value="20" />
+      <label for="sim-duration">仿真时长 (秒)</label>
+      <input type="number" id="sim-duration" min="60" max="7200" step="60" value="3600" />
+      <label for="initial-water-depth">初始积水深度 (mm)</label>
+      <input type="number" id="initial-water-depth" min="0" max="100" step="1" value="10" />
+
+      <button id="run-simulation" class="btn-primary">运行排水仿真</button>
+      <button id="run-aesthetic" class="btn-secondary">运行美学分析</button>
+    </aside>
+
+    <main class="center-panel">
+      <div id="three-container"></div>
+    </main>
+
+    <aside class="right-panel">
+      <h3>传感器数据</h3>
+      <table class="data-table" id="sensor-table">
+        <thead>
+          <tr>
+            <th>指标</th>
+            <th>数值</th>
+            <th>单位</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+
+      <h3>仿真结果</h3>
+      <div id="simulation-results"></div>
+      <canvas id="time-series-canvas" width="300" height="180"></canvas>
+
+      <h3>美学分析结果</h3>
+      <div id="aesthetic-results"></div>
+      <canvas id="fractal-canvas" width="300" height="180"></canvas>
+
+      <h3>告警信息</h3>
+      <div id="alerts-panel"></div>
+    </aside>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
